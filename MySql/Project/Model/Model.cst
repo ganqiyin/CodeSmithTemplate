@@ -22,6 +22,9 @@ namespace <%= string.IsNullOrEmpty(NameSpace)?"":NameSpace + "." %>Entities
      {
         <%--遍历数据库表的字段属性--%>
         <% foreach (ColumnSchema column in this.SourceTable.Columns) {  %>
+        /// <summary>
+        /// <%=column.Description %>
+        /// </summary>
         <%--拼接字符串，输出c#中实体的属性--%>
         public <%= CSharpAlias[column.SystemType.FullName] %> <%= StringUtil.ToPascalCase(column.Name) %> { get ;   set ;}
 
