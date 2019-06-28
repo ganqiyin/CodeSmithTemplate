@@ -23,10 +23,7 @@
 <%@ Import Namespace="System.Text.RegularExpressions" %>
 <%@ Import Namespace="System.Collections.Specialized" %>
 <%@ Import Namespace="System.Collections.Generic" %>
-<%-- 导入后台代码 --%>
-<!-- #include file="Generate.cst.cs" -->
-
-
+ 
 <script runat="template">
     //模板列表
     Dictionary<CodeTemplate, string> templates = new Dictionary<CodeTemplate, string>();
@@ -34,9 +31,10 @@
     //入口
     public void Generate()
     {
+        try{
         //
         GetTemplates(TemplateDirectory); //读取模板
-  
+        //
         int tableIndex = 0;
         int templateIndex = 0;
         TableSchemaCollection tables = SourceTables != null && SourceTables.Count > 0 ? SourceTables : SourceDatabase.Tables; //若未手动选择数据表，则默认为全数据库
@@ -56,17 +54,21 @@
                 template.Key.SetProperty("SourceTable",SourceTable);   //传入数据表的名称 
                 
                 //读取模板的文件命名格式，生成文件名
-                string FileName = template.Key.GetProperty("FileNameFormat") == null ? SourceTable.Name : string.Format(template.Key.GetProperty("FileNameFormat").ToString(),SourceTable.Name);
-               
-                template.Key.RenderToFile(Path.Combine(template.Value, FileName), true); //按照模板的目录层级生成文件
+               // string FileName = template.Key.GetProperty("FileNameFormat") == null ? SourceTable.Name: string.Format(template.Key.GetProperty("FileNameFormat").ToString(), SourceTable.Name);
+                string FileName = template.Key.GetProperty("FileNameFormat") == null ? StringUtil.ToPascalCase(SourceTable.Name) : string.Format(template.Key.GetProperty("FileNameFormat").ToString(), StringUtil.ToPascalCase(SourceTable.Name));
+                template.Key.RenderToFile(Path.Combine(template.Value, FileName), true); //按照模板的目录层级生成文件 
             }
             Response.WriteLine();
+        }
+        }
+        catch(Exception ex)
+        {
+             Response.Write("Error:"+ex.ToString());
         }
     }
     
     private void GetTemplates(string directoryStr)
-    { 
-        //DirectoryInfo directoryInfo = Directory.CreateDirectory(directoryStr);
+    {  
         DirectoryInfo directoryInfo=new DirectoryInfo(directoryStr);
         GetTemplates(directoryInfo);
     }
@@ -89,7 +91,7 @@
             }
             else
             {
-                Response.WriteLine("编译模板" + file.FullName + "错误！");
+              Response.WriteLine("编译模板" + file.FullName + "错误:"+compiler.Errors.ToString()); 
             }
         }
 
