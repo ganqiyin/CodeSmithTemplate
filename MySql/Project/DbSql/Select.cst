@@ -4,7 +4,8 @@ Author:
 Description: 
 --%>
 <%-- 引入C# 模板 --%>
-<%@ CodeTemplate Language="C#" TargetLanguage="C#" Debug="False" Description="Create a list of properties from database table." %> 
+<%@ CodeTemplate Language="C#" TargetLanguage="C#" Debug="False" Description="Create a list of properties from database table." %>
+<%@ CodeTemplate Src="Select.cst.cs" Inherits="SelectBehindClass" Language="C#" TargetLanguage="C#" Description="" %>
 <%--声明数据库表的参数，在左下角的表属性中，选择要操作的数据库表--%>
 <%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="Table that the object is based on." %>
 <%@ Property Name="FileNameFormat" Type="String" Category="Context" Default="select_{0}.sql" Description="FileName FormatStr"  Optional="True" %>
