@@ -1,0 +1,40 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%-- 引入C# 模板 --%>
+<%@ CodeTemplate Language="C#" TargetLanguage="C#" Debug="False" Description="Create a list of properties from database table." %>
+<%@ CodeTemplate Src="Insert.cst.cs" Inherits="InsertBehindClass" Language="C#" TargetLanguage="C#" Description="" %>
+<%--声明数据库表的参数，在左下角的表属性中，选择要操作的数据库表--%>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="Table that the object is based on." %>
+<%@ Property Name="FileNameFormat" Type="String" Category="Context" Default="select_{0}.sql" Description="FileName FormatStr"  Optional="True" %>
+<%@ Property Name="NameSpace" Type="System.String" Default="" Category="NameSpace" Description="命名空间"  Optional="True"  %>
+<%--引入system类型转为c#的数据类型的映射字典 --%>
+<%@ Map Name="CSharpAlias" Src="System-CSharpAlias" Description="System to C# Type Map" %>
+<%--引入下面的类库，操作数据库必备的。--%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="System.Text" %> 
+<%-- 执行输出文件的函数 --%>
+<%= this.BuildSql() %> 
+
+<script runat="template">
+// 生成实体文件
+public string BuildSql()
+{ 
+    var sqlFields=new StringBuilder();
+    var sqlValues=new StringBuilder(); 
+    //遍历数据库表的字段属性
+     for (var i=0;i<this.SourceTable.Columns.Count;i++) {
+             var column=this.SourceTable.Columns[i];
+             sqlFields.Append(column.Name);
+             sqlFields.Append((i==this.SourceTable.Columns.Count-1)?"":"," );
+             //
+             sqlValues.AppendFormat("@{0}",column.Name);
+             sqlValues.Append((i==this.SourceTable.Columns.Count-1)?"":"," );
+         } 
+         
+     return  string.Format(" INSERT INTO {0}({1}) VALUES({2})",SourceTable.Name,sqlFields,sqlValues);
+} 
+</script>
