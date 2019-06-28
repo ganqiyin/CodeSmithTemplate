@@ -1,0 +1,107 @@
+﻿<%@ CodeTemplate Language="C#" TargetLanguage="C#"  Debug="True" Description="模板输出" %>
+
+<%@ Property Name="NameSpace" Type="System.String" Default="" Category="命名空间" Optional="True" Description="项目的命名空间"  %>
+
+<%@ Property Name="SourceDatabase" Type="DatabaseSchema" Default="" Optional="True" Category="数据源" Description="选择数据库" %>
+<%@ Property Name="SourceTables" Type="SchemaExplorer.TableSchemaCollection" Default="" Optional="True" Category="数据源" Description="选择数据表，默认空则为全部表" %>
+
+
+<%@ Property Name="TemplateDirectory" Type="String" Editor="System.Windows.Forms.Design.FolderNameEditor" EditorBase="System.Drawing.Design.UITypeEditor" Default="\\" Optional="False" Category="模板" Description="--模板目录--"%>
+<%@ Property Name="ExceptPrefix" Type="String" Default="" Optional="True" Category="模板" Description="排除前缀为__的" %>
+
+<%@ Property Name="OutputDirectory" Type="String" Editor="System.Windows.Forms.Design.FolderNameEditor" EditorBase="System.Drawing.Design.UITypeEditor" Default="\\" Optional="False" Category="输出目录" Description="--输出目录--"%>
+
+
+<%@ Assembly Name="System.Design" %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+
+<%@ Import Namespace="System.IO" %>
+<%@ Import Namespace="System.Xml" %>
+<%@ Import Namespace="System.Text" %>
+<%@ Import Namespace="System.Windows.Forms.Design" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.Collections.Specialized" %>
+<%@ Import Namespace="System.Collections.Generic" %>
+
+
+
+<script runat="template">
+    //模板列表
+    Dictionary<CodeTemplate, string> templates = new Dictionary<CodeTemplate, string>();
+
+    //入口
+    public void Generate()
+    {
+        GetTemplates(TemplateDirectory); //读取模板
+  
+        int tableIndex = 0;
+        int templateIndex = 0;
+        TableSchemaCollection tables = SourceTables != null && SourceTables.Count > 0 ? SourceTables : SourceDatabase.Tables; //若未手动选择数据表，则默认为全数据库
+        foreach(TableSchema SourceTable in tables)
+        {
+            tableIndex++;
+
+            Response.Write(string.Format("{0}.Table {1}",tableIndex, SourceTable.Name));
+            Response.WriteLine();
+            templateIndex = 0;
+            foreach(var template in templates)
+            {
+                templateIndex++;
+                Response.Write(string.Format("     {0}.template {1}",templateIndex, template.Key.CodeTemplateInfo.FileName));
+                Response.WriteLine();
+                template.Key.SetProperty("NameSpace",NameSpace);       //设置统一的命名空间
+                template.Key.SetProperty("SourceTable",SourceTable);   //传入数据表的名称 
+                
+                //读取模板的文件命名格式，生成文件名
+                string FileName = template.Key.GetProperty("FileNameFormat") == null ? SourceTable.Name : string.Format(template.Key.GetProperty("FileNameFormat").ToString(),SourceTable.Name);
+                if(!string.IsNullOrEmpty(template.Value))
+                {template.Key.RenderToFile(Path.Combine(template.Value, FileName), true);} //按照模板的目录层级生成文件
+            }
+            Response.WriteLine();
+        }
+    }
+    
+    private void GetTemplates(string directoryStr)
+    {
+         Response.WriteLine(directoryStr);
+        if(string.IsNullOrEmpty(directoryStr))
+        {
+              Response.WriteLine("目录为空");
+        }else{
+        DirectoryInfo directoryInfo = Directory.CreateDirectory(directoryStr);
+        GetTemplates(directoryInfo);
+        }
+    }
+    
+    //递归方式读取所有满足要求的模板，记录模板的目录结构，生成代码文件时参照此时的目录结构
+    private void GetTemplates(DirectoryInfo directoryInfo)
+    {
+        foreach (var file in directoryInfo.GetFiles())
+        {
+            if (!file.Extension.ToLower().Equals(".cst") || (!string.IsNullOrEmpty(ExceptPrefix) && file.Name.StartsWith(ExceptPrefix)))
+            {
+                continue;
+            }
+            
+            CodeTemplateCompiler compiler = new CodeTemplateCompiler(file.FullName);
+            compiler.Compile();   //编译子模板
+            if (compiler.Errors.Count == 0)
+            {
+                templates.Add(compiler.CreateInstance(),directoryInfo.FullName.Replace(TemplateDirectory, OutputDirectory));
+            }
+            else
+            {
+                Response.WriteLine("编译模板" + file.FullName + "错误！");
+            }
+        }
+
+        foreach (var directory in directoryInfo.GetDirectories())
+        {
+            GetTemplates(directory);
+        }
+    }
+     
+</script>
+
+<% this.Generate();  %>

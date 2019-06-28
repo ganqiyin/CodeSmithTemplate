@@ -10,7 +10,8 @@ Description:
 <%--声明数据库的参数，在左下角的Database属性中，选择要操作的数据库名称--%>
 <%@ Property Category="Database" Name="SourceDatabase" Type="SchemaExplorer.DatabaseSchema" Optional="False" Description="Database the table enums will come from." %>
 <%--声明数据库表的参数，在左下角的表属性中，选择要操作的数据库表--%>
-<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="Table that the object is based on." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Optional="True" Description="Table that the object is based on." %>
+ 
 <%-- 执行输出文件的函数 --%>
 <% this.BuildEntities(); %> 
 
@@ -29,7 +30,7 @@ public void BuildEntities()
         //生成列表表字段的模板
         CodeTemplate cloumn =new TableClumnsTemplate();
         //指定输出路径
-        string cloumnFilePath = OutputDirectory +"\\"+ this.SourceTable.Name +".cs";
+        string cloumnFilePath = OutputDirectory +"\\Entities\\"+ this.SourceTable.Name +".cs";
          //给子模板参数赋值
         cloumn.SetProperty("SourceTable",this.SourceTable);
         cloumn.RenderToFile(cloumnFilePath,true); 
