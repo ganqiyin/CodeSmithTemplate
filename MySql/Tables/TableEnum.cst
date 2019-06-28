@@ -1,0 +1,28 @@
+﻿<%-- 
+Name: Table Enum
+Author: Paul Welter
+Description: Create an enum of tables.
+--%>
+<%-- 引入C# 模板 --%>
+<%@ CodeTemplate Language="C#" TargetLanguage="C#" Debug="False" Description="Create an enum of tables." %>
+<%--声明数据库的参数，在左下角的Database属性中，选择要操作的数据库名称--%>
+<%@ Property Category="Database" Name="SourceDatabase" Type="SchemaExplorer.DatabaseSchema" Optional="False" Description="Database the table enums will come from." %>
+<%--引入下面的类库，操作数据库必备的。不要纠结加入就行啦。--%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%--SourceDatabase, 是你选择数据库的属性类，涵盖数据库的名称，创建时间，字符串链接，描述等等，自己可以点点看 --%>
+public enum <%= StringUtil.ToPascalCase(SourceDatabase.Name) %>Tables
+{
+<%-- 遍历数据库中的表集合 --%>
+<% for(int x = 0; x < SourceDatabase.Tables.Count; x++) 
+{ 
+    TableSchema table = SourceDatabase.Tables[x];
+    if (x < SourceDatabase.Tables.Count -1)
+         //输出表名，这里是c#的注释，不会被写进生成的代码中。\t为换行符。
+        Response.WriteLine("\t{0},", StringUtil.ToPascalCase(table.Name));
+    else
+        Response.WriteLine("\t{0}", StringUtil.ToPascalCase(table.Name));
+
+}
+%>  
+}
