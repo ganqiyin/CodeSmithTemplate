@@ -19,6 +19,6 @@ Description:
         <%--遍历数据库表的字段属性--%>
         <% foreach (ColumnSchema column in this.SourceTable.Columns) {  %> 
         <%--拼接字符串，输出c#中实体的属性--%>
-        <%= column.Name %>=@<%= StringUtil.ToPascalCase(column.Name) %>
+        `<%= column.Name %>`=@<%= StringUtil.ToPascalCase(column.Name) %>
 
         <% } %> 
