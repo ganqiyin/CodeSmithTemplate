@@ -1,0 +1,24 @@
+﻿<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%-- 引入C# 模板 --%>
+<%@ CodeTemplate Language="C#" TargetLanguage="C#" Debug="False" Description="Create a list of properties from database table." %>
+<%--声明数据库表的参数，在左下角的表属性中，选择要操作的数据库表--%>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="Context" Description="Table that the object is based on." %>
+<%@ Property Name="FileNameFormat" Type="String" Category="Context" Default="Update_{0}.sql" Description="FileName FormatStr"  Optional="True" %>
+<%@ Property Name="NameSpace" Type="System.String" Default="" Category="NameSpace" Description="命名空间"  Optional="True"  %>
+<%--引入system类型转为c#的数据类型的映射字典 --%>
+<%@ Map Name="CSharpAlias" Src="System-CSharpAlias" Description="System to C# Type Map" %>
+<%--引入下面的类库，操作数据库必备的。--%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Import Namespace="SchemaExplorer" %>
+  
+  UPDATE <%= SourceTable.Name %>  SET 
+        <%--遍历数据库表的字段属性--%>
+        <% foreach (ColumnSchema column in this.SourceTable.Columns) {  %> 
+        <%--拼接字符串，输出c#中实体的属性--%>
+        `<%= column.Name %>`=@<%= StringUtil.ToPascalCase(column.Name) %>,
+
+        <% } %> 
